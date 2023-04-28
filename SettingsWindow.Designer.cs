@@ -146,9 +146,9 @@ namespace serialcom
             this.autoEstablishLabel.AutoSize = true;
             this.autoEstablishLabel.Location = new System.Drawing.Point(395, 42);
             this.autoEstablishLabel.Name = "autoEstablishLabel";
-            this.autoEstablishLabel.Size = new System.Drawing.Size(45, 13);
+            this.autoEstablishLabel.Size = new System.Drawing.Size(58, 10);
             this.autoEstablishLabel.TabIndex = 22;
-            this.autoEstablishLabel.Text = "Use this";
+            this.autoEstablishLabel.Text = "Auto Connect";
             // 
             // headingLabel
             // 
@@ -283,6 +283,7 @@ namespace serialcom
             this.deleteConnection.TabIndex = 6;
             this.deleteConnection.Text = "Delete";
             this.deleteConnection.UseVisualStyleBackColor = true;
+            this.deleteConnection.Click += new System.EventHandler(this.deleteConnection_Click);
             // 
             // editConnection
             // 
@@ -292,6 +293,7 @@ namespace serialcom
             this.editConnection.TabIndex = 5;
             this.editConnection.Text = "Edit";
             this.editConnection.UseVisualStyleBackColor = true;
+            this.editConnection.Click += new System.EventHandler(this.editConnection_Click);
             // 
             // reloadConnectionList
             // 
@@ -507,6 +509,7 @@ namespace serialcom
             this.clearLogs.TabIndex = 15;
             this.clearLogs.Text = "Clear";
             this.clearLogs.UseVisualStyleBackColor = true;
+            this.clearLogs.Click += new System.EventHandler(this.clearLogs_Click);
             // 
             // logsLabel
             // 
@@ -543,6 +546,7 @@ namespace serialcom
             this.deleteSerialPort.TabIndex = 11;
             this.deleteSerialPort.Text = "Delete";
             this.deleteSerialPort.UseVisualStyleBackColor = true;
+            this.deleteSerialPort.Click += new System.EventHandler(this.deleteSerialPort_Click);
             // 
             // editSerialPort
             // 

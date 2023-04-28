@@ -94,7 +94,7 @@ namespace serialcom
                 if (isManualConnection)
                 {
                     connectionWindow.createTcpIpConnection();
-                    connectionWindow.ShowDialog();
+                    connectionWindow.Show();
                 } 
                 else
                 {
@@ -112,6 +112,12 @@ namespace serialcom
 
         private void instanceSave_Click(object sender, EventArgs e)
         {
+            SaveTcpIpConnection();
+            LoadTcpIpConnections();
+        }
+
+        private void SaveTcpIpConnection()
+        {
             try
             {
                 if (
@@ -121,48 +127,99 @@ namespace serialcom
                     (this.serverRadio.Checked || this.clientRadio.Checked)
                 )
                 {
-                    string type = this.serverRadio.Checked ? "Server" : this.clientRadio.Checked ? "Client" : null;
-                    int port = 0;
-                    int autoEstablishConnection = this.autoEstablish.Checked ? 1 : 0;
-                    if (int.TryParse(this.port.Text, out int result))
+                    if(idHolder == 0)
                     {
-                        port = result;
+                        string type = this.serverRadio.Checked ? "Server" : this.clientRadio.Checked ? "Client" : null;
+                        int port = 80;
+                        int autoEstablishConnection = this.autoEstablish.Checked ? 1 : 0;
+                        if (int.TryParse(this.port.Text, out int result))
+                        {
+                            port = result;
+                        }
+                        string query = $"SELECT * FROM TcpIpSettings WHERE type='{type}' AND connection_name='{this.connectionName.Text}' AND ip_address='{this.ipAddress.Text}' AND port={port};";
+                        SQLiteConnection connection = new SQLiteConnection(this.DbConnectionString);
+                        connection.Open();
+                        SQLiteCommand command = new SQLiteCommand(query, connection);
+                        SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
+                        DataTable dataTable = new DataTable();
+                        dataAdapter.Fill(dataTable);
+                        if (dataTable.Rows.Count == 0)
+                        {
+                            if (autoEstablishConnection == 1)
+                            {
+                                query = $"UPDATE TcpIpSettings SET auto_connect=0;";
+                                command = new SQLiteCommand(query, connection);
+                                command.ExecuteNonQuery();
+                            }
+                            query = $"INSERT INTO TcpIpSettings Values (NULL, '{type}', '{this.connectionName.Text}', '{this.ipAddress.Text}', {port}, {autoEstablishConnection});";
+                            command = new SQLiteCommand(query, connection);
+                            var response = command.ExecuteNonQuery();
+                            if (response > 0)
+                            {
+
+                                MessageBox.Show("TCP/IP connection settings saved successfully");
+                                this.serverRadio.Checked = false;
+                                this.clientRadio.Checked = false;
+                                this.autoEstablish.Checked = false;
+                                this.connectionName.Text = null;
+                                this.ipAddress.Text = null;
+                                this.port.Text = null;
+                                this.LoadTcpIpConnections();
+                            }
+                            else
+                            {
+                                throw new Exception("Couldn't save data into the database.");
+                            }
+                        }
+                        if (dataTable.Rows.Count > 0)
+                        {
+                            this.errorLabel.Text = "This connection exists, change some details before saving.";
+                            this.errorLabel.Visible = true;
+                        }
+                        connection.Close();
                     }
-                    string query = $"SELECT * FROM TcpIpSettings WHERE type='{type}' AND connection_name='{this.connectionName.Text}' AND ip_address='{this.ipAddress.Text}' AND port={port};";
-                    SQLiteConnection connection = new SQLiteConnection(this.DbConnectionString);
-                    connection.Open();
-                    SQLiteCommand command = new SQLiteCommand(query, connection);
-                    SQLiteDataAdapter dataAdapter = new SQLiteDataAdapter(command);
-                    DataTable dataTable = new DataTable();
-                    dataAdapter.Fill(dataTable);
-                    if (dataTable.Rows.Count == 0)
+
+                    if (this.idHolder > 0)
                     {
-                        query = $"INSERT INTO TcpIpSettings Values (NULL, '{type}', '{this.connectionName.Text}', '{this.ipAddress.Text}', {port}, {autoEstablishConnection});";
+                        string type = this.serverRadio.Checked ? "Server" : this.clientRadio.Checked ? "Client" : null;
+                        int port = 80;
+                        int autoEstablishConnection = this.autoEstablish.Checked ? 1 : 0;
+                        if (int.TryParse(this.port.Text, out int result))
+                        {
+                            port = result;
+                        }
+                        string query = $"UPDATE TcpIpSettings SET type='{type}', connection_name='{this.connectionName.Text}', ip_address='{this.ipAddress.Text}', port={port}, auto_connect={autoEstablishConnection} WHERE id={this.idHolder};";
+                        SQLiteConnection connection = new SQLiteConnection(this.DbConnectionString);
+                        connection.Open();
+                        SQLiteCommand command = new SQLiteCommand(query, connection);
                         command = new SQLiteCommand(query, connection);
                         var response = command.ExecuteNonQuery();
                         if (response > 0)
                         {
 
-                            MessageBox.Show("Connection settings saved successfully");
+                            MessageBox.Show("TCP/IP connection settings updated successfully");
                             this.serverRadio.Checked = false;
                             this.clientRadio.Checked = false;
                             this.autoEstablish.Checked = false;
                             this.connectionName.Text = null;
                             this.ipAddress.Text = null;
                             this.port.Text = null;
-                            this.LoadTcpIpConnections();
+                            
+                            this.ConnectionTab.SelectedTab = this.tcpIpConnectionsList;
                         }
                         else
                         {
-                            MessageBox.Show("Couldn't save data into the database.");
+                            throw new Exception("Couldn't save data into the database.");
                         }
+                        if (autoEstablishConnection == 1)
+                        {
+                            query = $"UPDATE TcpIpSettings SET auto_connect=0 WHERE id!={this.idHolder};";
+                            command = new SQLiteCommand(query, connection);
+                            response = command.ExecuteNonQuery();
+                        }
+                        this.idHolder = 0;
+                        connection.Close();
                     }
-                    if (dataTable.Rows.Count > 0)
-                    {
-                        this.errorLabel.Text = "This connection exists, change some details before saving.";
-                        this.errorLabel.Visible = true;
-                    }
-                    connection.Close();
                 }
                 else
                 {
@@ -172,7 +229,7 @@ namespace serialcom
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                MessageBox.Show($"Failed to save data. Error: {ex.Message}");
             }
         }
 
@@ -348,6 +405,12 @@ namespace serialcom
                     dataAdapter.Fill(dataTable);
                     if (dataTable.Rows.Count == 0)
                     {
+                        if (autoOpen == 1)
+                        {
+                            query = $"UPDATE SerialSettings SET auto_open=0;";
+                            command = new SQLiteCommand(query, connection);
+                            command.ExecuteNonQuery();
+                        }
                         query = $"INSERT INTO SerialSettings Values (NULL, '{serialPortName}', {autoOpen}, '{parityBitsValue}', {transferBitsValue}, '{stopBitValue}', {baudRateValue});";
                         command = new SQLiteCommand(query, connection);
                         var response = command.ExecuteNonQuery();
@@ -417,6 +480,7 @@ namespace serialcom
                             MessageBox.Show("Couldn't set auto open for unapplied fields.");
                         }
                     }
+                    connection.Close();
                     this.idHolder = 0;
                 }
 
@@ -525,8 +589,71 @@ namespace serialcom
             {
                 if (this.serialConnections.SelectedRows.Count == 1)
                 {
-                    DataGridViewRow selectedRow = this.serialConnections.SelectedRows[0];
-                    this.idHolder = int.Parse(selectedRow.Cells["id"].Value.ToString());
+                    GetSelectedSerialPortData("Edit");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Couln't edit record. Error {ex.Message}");
+            }
+        }
+
+        private void editConnection_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.tcpIpConnections.SelectedRows.Count == 1)
+                {
+                    GetSelectedTcpIpConnectionData("Edit");
+                } else
+                {
+                    throw new Exception("Select 1 row if you need to edit.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Couln't edit record. Error {ex.Message}");
+            }
+        }
+
+        private void GetSelectedTcpIpConnectionData(string action)
+        {
+            try
+            {
+                DataGridViewRow selectedRow = this.tcpIpConnections.SelectedRows[0];
+                this.idHolder = int.Parse(selectedRow.Cells["id"].Value.ToString());
+                if (action == "Edit")
+                {
+                    var connectionName = selectedRow.Cells["Connection Name"].Value.ToString();
+                    var ipAddress = selectedRow.Cells["IP Address"].Value.ToString();
+                    var port = selectedRow.Cells["Port"].Value.ToString();
+                    var autoConnect = selectedRow.Cells["Auto Connect"].Value.ToString() == "Yes";
+                    var type = selectedRow.Cells["Type"].Value.ToString();
+
+
+                    this.connectionName.Text = connectionName;
+                    this.ipAddress.Text = ipAddress;
+                    this.port.Text = port;
+                    this.serverRadio.Checked = type == "Server";
+                    this.clientRadio.Checked = type == "Client";
+                    this.autoEstablish.Checked = autoConnect;
+                    this.ConnectionTab.SelectedTab = this.registerTcpIpConnection;
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to obtain data from selected row.");
+            }
+        }
+        private void GetSelectedSerialPortData(string action)
+        {
+            try
+            {
+
+                DataGridViewRow selectedRow = this.serialConnections.SelectedRows[0];
+                this.idHolder = int.Parse(selectedRow.Cells["id"].Value.ToString());
+                if (action == "Edit")
+                {
                     var portName = selectedRow.Cells["Port Name"].Value.ToString();
                     var baudRate = selectedRow.Cells["BaudRate"].Value.ToString();
                     var parity = selectedRow.Cells["Parity"].Value.ToString();
@@ -540,7 +667,7 @@ namespace serialcom
                     this.transferBits.SelectedItem = transferBits == 8 ? "8 bits" :
                         transferBits == 7 ? "7 bits" :
                         transferBits == 6 ? "6 bits" :
-                        "5 bits" ;
+                        "5 bits";
                     this.stopBit.SelectedItem = StopBit;
                     this.autoOpen.Checked = autoOpen == "Yes" ? true : false;
                     this.ConnectionTab.SelectedTab = this.newSerialConnection;
@@ -548,8 +675,94 @@ namespace serialcom
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Couln't edit record. Error {ex.Message}");
+
+                throw new Exception($"Failed to obtain data from selected row. Error: {ex.Message}");
             }
         }
+
+        private void DeleteSerialConnectionData()
+        {
+            try
+            {
+                string query = $"DELETE FROM SerialSettings WHERE id={this.idHolder};";
+                SQLiteConnection connection = new SQLiteConnection(this.DbConnectionString);
+                connection.Open();
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                command = new SQLiteCommand(query, connection);
+                var response = command.ExecuteNonQuery();
+                if (response > 0)
+                {
+                    MessageBox.Show("Serial port settings deleted successfully");
+                }
+                else
+                {
+                    throw new Exception("Couldn't save data into the database.");
+                }
+                this.idHolder = 0;
+                LoadSerialSettings();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete record. Error: {ex.Message}");
+            }
+        }
+        private void DeleteTcpIpConnectionData()
+        {
+            try
+            {
+                string query = $"DELETE FROM TcpIpSettings WHERE id={this.idHolder};";
+                SQLiteConnection connection = new SQLiteConnection(this.DbConnectionString);
+                connection.Open();
+                SQLiteCommand command = new SQLiteCommand(query, connection);
+                command = new SQLiteCommand(query, connection);
+                var response = command.ExecuteNonQuery();
+                if (response > 0)
+                {
+                    MessageBox.Show("TCP/IP connection settings deleted successfully");
+                }
+                else
+                {
+                    throw new Exception("Couldn't save data into the database.");
+                }
+                this.idHolder = 0;
+                LoadTcpIpConnections();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete record. Error: {ex.Message}");
+            }
+        }
+
+        private void deleteConnection_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                GetSelectedTcpIpConnectionData(String.Empty);
+                DeleteTcpIpConnectionData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Couldn't delete record. Error: {ex.Message}");
+            }
+        }
+
+        private void deleteSerialPort_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                GetSelectedSerialPortData(String.Empty);
+                DeleteSerialConnectionData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Couldn't delete record. Error: {ex.Message}");
+            }
+        }
+
+        private void clearLogs_Click(object sender, EventArgs e)
+        {
+            this.logs.Text = null;
+        }
+
     }
 }
