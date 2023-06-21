@@ -1,2 +1,125 @@
-/.vs
-/bin
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.sln.docstates
+*.csproj.user
+*.vcxproj.user
+*.userprefs
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.sdf
+*.opensdf
+*.sln.docstates
+
+# Build output
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# NuGet Packages
+*.nuget/
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+
+# Windows Forms Designer backup files
+*.~sc
+*.~sln
+*.~proj
+*.~vspscc
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Resharper files
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+# ClickOnce directory
+publish/
+
+# Publish Web Output
+*.[Pp]ublish.xml
+*.azurePubxml
+# Note: Comment the next line if you want to checkin your web deploy settings,
+# but database connection strings (with potential passwords) will be unencrypted
+*.pubxml
+*.publishproj
+
+# Microsoft Azure Build Output
+csx/
+*.build.csdef
+
+# Microsoft Azure Emulator
+ecf/
+rcf/
+
+# Windows Azure Diagnostic Logs
+*.diagnostics.log
+*.txt
+
+# Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+# StyleCop
+StyleCopReport.xml
+
+# Files built by previous versions of Visual Studio
+UpgradeLog*.XML
+_UpgradeReport_Files/
+
+# Click-Once deployment files
+publish/
+
+# Windows Installer files
+*.msi
+*.msm
+*.msp
+*.mst
+*.pdb
+
+# WiX files
+*.wixobj
+*.wixpdb
+*.wixmst
+*.wixtmp
+*.wixzip
+*.wixip
+
+# TeamCity artifacts folder
+_TeamCity*
+
+# Paket dependency manager
+.paket/paket.exe
+
+# FAKE - F# Make
+.fake/
+.fakebuild/
+
+# JetBrains Rider
+.idea/
+
+# Coverlet code coverage reports
+coverage*.json

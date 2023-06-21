@@ -87,14 +87,19 @@ namespace serialcom
 
                     if (!_continue)
                     {
-                        string path = $@"C:\Abbott-m2000rt_Results_{DateTime.Now}.txt";
+                        var connectionWindow = new ConnectionWindow();
+                        connectionWindow.dataToBeSent = receivedData;
+                        connectionWindow.createTcpIpConnection();
+                        connectionWindow.sendConnectionData();
 
-                        using (StreamWriter writer = new StreamWriter(path))
-                        {
-                            writer.Write(log);
-                        }
+                        Console.WriteLine(log);
+                        //string path = $@"C:\Abbott-m2000rt_Results_{DateTime.Now}.txt";
+
+                        //using (StreamWriter writer = new StreamWriter(path))
+                        //{
+                        //    writer.Write(log);
+                        //}
                     }
-                    readSerialPort();
                 }
 
             }
